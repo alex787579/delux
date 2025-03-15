@@ -232,31 +232,72 @@
 // Function to Submit Selected Orders
 function submitSelectedOrders() {
     var selectedOrders = [];
+    var orderDetails = "<table class='table'><thead><tr><th>Material Number</th><th>Quantity</th><th>Standard Package</th><th>Material Price</th><th>Total Price</th><th>Segment</th></tr></thead><tbody>";
     
     $(".orderCheckbox:checked").each(function() {
+        var row = $(this).closest("tr");
+        var materialNumber = row.find("td:eq(1)").text();
+        var quantity = row.find("td:eq(2)").text();
+        var standardPackage = row.find("td:eq(3)").text();
+        var materialPrice = row.find("td:eq(4)").text();
+        var totalPrice = row.find("td:eq(5)").text();
+        var segment = row.find("td:eq(6)").text();
+
         selectedOrders.push($(this).val());
+        orderDetails += `<tr><td>${materialNumber}</td><td>${quantity}</td><td>${standardPackage}</td><td>${materialPrice}</td><td>${totalPrice}</td><td>${segment}</td></tr>`;
     });
+    
+    orderDetails += "</tbody></table>";
 
     if (selectedOrders.length === 0) {
-        alert("❌ Please select at least one order!");
+        Swal.fire({
+            icon: "error",
+            title: "❌ No Orders Selected",
+            text: "Please select at least one order!"
+        });
         return;
     }
 
-    $.ajax({
-        url: "{{ url('submit-trail-orders') }}", // Backend route
-        type: "POST",
-        data: {
-            _token: $("input[name=_token]").val(),
-            order_ids: selectedOrders
-        },
-        success: function(response) {
-          console.log(response);
-            
-            // alert("✅ Orders submitted successfully!");
-            // location.reload(); // Refresh page after submission
-        },
-        error: function(xhr) {
-            console.log(xhr);
+    Swal.fire({
+        title: "Confirm Submission",
+        html: `<p>Are you sure you want to submit the selected orders?</p>${orderDetails}`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "✅ Submit",
+        cancelButtonText: "❌ Cancel",
+        customClass: {
+            popup: "swal-wide"
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "submit-trail-orders",
+                type: "POST",
+                data: {
+                    _token: $("input[name=_token]").val(),
+                    order_ids: selectedOrders
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "✅ Orders Submitted",
+                        text: "Your selected orders have been submitted successfully!"
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    let errorMessage = "Something went wrong. Please try again!";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    Swal.fire({
+                        icon: "error",
+                        title: "❌ Submission Failed",
+                        text: errorMessage
+                    });
+                }
+            });
         }
     });
 }

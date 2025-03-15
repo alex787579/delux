@@ -11,7 +11,9 @@ use App\Models\OrderTrail;
 use App\Models\UploadedFile;
 use Illuminate\Support\Facades\Crypt;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Mail\OrderCreate;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Mail;
 class OrderController extends Controller
 {
     //
@@ -164,8 +166,8 @@ public function exportOrders($format)
             if (!is_array($orderIds) || empty($orderIds)) {
                 return response()->json(['error' => true, 'message' => 'No orders selected.'], 400);
             }
-
-            $trails = OrderTrail::whereIn('id',$orderIds)->where('status', 'P')->get();
+    
+            $trails = OrderTrail::whereIn('id', $orderIds)->where('status', 'Pending')->get();
     
             if ($trails->isEmpty()) {
                 return response()->json(['error' => true, 'message' => 'No valid orders found.'], 404);
@@ -176,23 +178,21 @@ public function exportOrders($format)
                     'std_pkg' => $trail->std_pkg,
                     'qty' => $trail->qty,
                     'material_no' => $trail->material_no,
-                    // 'order_type' => $trail->order_type,
                     'segment' => $trail->segment,
                     'value_mrp_less_50' => $trail->total_value_mrp_less_50,
-                    // 'status' => 'P' // Set default status
+                    // Add other necessary fields here
                 ]);
     
-                // Update the trail record status to "Processed"
-                $trail->update(['status' => 'A']);
+                // Delete the trail record from OrderTrail
+                $trail->delete();
             }
     
-            return response()->json(['success' => true, 'message' => 'Orders added successfully.']);
+            return response()->json(['success' => true, 'message' => 'Orders processed successfully.']);
     
         } catch (\Exception $e) {
             return response()->json(['error' => true, 'message' => 'Error: ' . $e->getMessage()]);
         }
-    }
-
+    }    
     public function deleteOrder($id)
     {
         $order = OrderTrail::find($id);
@@ -207,46 +207,31 @@ public function exportOrders($format)
 
     public function store(Request $request)
     {
-
-        // print_r($request->post());
-        // exit;
         try {
-
-            // $validated = $request->validate([
-            //     'material_no' => 'required|string|max:100',
-            //     'std_pkg' => 'required|integer',
-            //     'value_mrp_less_50' => 'required|numeric|min:0',
-            //     'segment' => 'required|string|max:50',
-            //     'order_type' => 'required|string|in:Regular,Advance',
-            //     'qty' => 'required|integer|min:1',
-            // ]);
-    
-            // Save data in the database (assuming you have a model named Order)
             $order = new OrderTrail;
+            $order->ship_to_cust_code = $request->customerCode;
             $order->std_pkg = $request->std_pkg;
             $order->value_mrp_less_50 = $request->value_mrp_less_50;
             $order->segment = $request->segment;
-            $order->qty = $request->qty;
+            $order->qty = $request->qty;  
+            $order->total_value_mrp_less_50 = $order->value_mrp_less_50 * $order->qty;
             $order->material_no = $request->material_no;
             $order->order_type = $request->order_type;
-            $order->status = 'P';
-            // $order->save();
-            // $order->std_pkg = $request->std_pkg;
-            // $order->std_pkg = $request->std_pkg;
-            if($order->save()){
-                return response()->json(['success' => true, 'message' => 'Order saved successfully!']);
-            }else{
-                return response()->json(['error' => true, 'message' => 'Unable to failed order!']);
+            $order->status = 'Pending';
+    
+            if ($order->save()) {
+                $email = session('email');
+                Mail::to($email)->send(new OrderCreate($order));
+    
+                return response()->json(['success' => true, 'message' => 'Order saved successfully! Email sent.']);
+            } else {
+                return response()->json(['error' => true, 'message' => 'Unable to save order!']);
             }
     
-           
-    
-        } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
         }
-
-}
-
+    }
 
 // Update OrderTrail Model in Controller
 // public function updateOrderTrail(Request $request, $id)

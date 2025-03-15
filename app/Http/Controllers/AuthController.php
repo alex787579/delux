@@ -42,7 +42,10 @@ class AuthController extends Controller
         if (!$user) {
         return back()->with('error', 'Invalid email or account is inactive.');
         }
+        $request->session()->put('UserRole', $user->role);
         $request->session()->put('EMPID', $user->id);
+        $request->session()->put('Email', $user->email);
+        $request->session()->put('CustomerCode', $user->CustomerCode);
         $request->session()->put('EMP_NAME', ucfirst($user->name));
 
         return redirect('/')->with('success', 'Login successful!');
