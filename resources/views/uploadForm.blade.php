@@ -8,9 +8,15 @@
 			    
 			    <h1 class="app-page-title">Order List</h1>
 
-              <a href="{{ url('/export/orders/xlsx') }}" class="btn btn-success">Export to Excel</a>
-			  <a href="{{ url('/export/orders/csv') }}" class="btn btn-primary">Export to CSV</a>
-  
+				<div class="mb-2">
+					<a href="{{ url('/export/orders/xlsx') }}" class="btn btn-sm btn-success">
+						<i class="fas fa-file-excel" style="color: white;"></i>
+					</a>
+					<a href="{{ url('/export/orders/csv') }}" class="btn btn-sm btn-primary">
+						<i class="fas fa-file-csv" style="color: white;"></i>
+					</a>
+					
+				</div>
 			    
 			    <div class="app-card shadow-sm mb-4 " role="alert">
 					@if (session('success'))
@@ -19,6 +25,32 @@
 
 				@if (session('error'))
 					<div class="alert alert-danger">{{ session('error') }}</div>
+				@endif
+
+					
+				@if (session('role') == 'admin')
+				<div class="container mt-3 mb-3">
+					<form action="{{ route('export-orders') }}" method="POST">
+						@csrf
+						<div class="row ">
+							<div class="col-md-3">
+								<label for="customer_code">Customer Code:</label>
+								<input type="text" name="customer_code" class="form-control" >
+							</div>
+							<div class="col-md-3">
+								<label for="from_date">From Date:</label>
+								<input type="date" name="from_date" class="form-control" >
+							</div>
+							<div class="col-md-3">
+								<label for="to_date">To Date:</label>
+								<input type="date" name="to_date" class="form-control" >
+							</div>
+							<div class="col-md-3 mt-4">
+								<button type="submit" class="btn btn-success">Export Excel</button>
+							</div>
+						</div>
+					</form>
+				</div>
 				@endif
 
 				    <div class="inner">
@@ -30,33 +62,28 @@
 										<div class="tab-pane fade show active" id="orders-all" role="tabpanel" aria-labelledby="orders-all-tab">
 											<div class="app-card app-card-orders-table shadow-sm mb-5">
 												<div class="app-card-body">
-													<div class="table-responsive">
+													<div class="table-responsive p-5">
 														
 														<table id="userTable" class="table app-table-hover mb-0 text-left">
 															<thead>
 																<tr>
-																	<th>Order ID</th>
 																	<th>Distributor Channel</th>
-																	<th>Sold To Party</th>
-																	<th>Ship To Cust</th>
+																	<th>Bill to</th>
+																	<th>Ship to</th>
 																	<th>Material Number</th>
 																	<th>Quantity</th>
-																	<td>Action</td>
-																	<th>Standard Package</th>
+																	{{-- <td>Action</td> --}}
+																	<th>Std Pkg</th>
 																	<th>Material Price</th>
 																	<th>Total Price</th>
 																	<th>Segment</th>
-																	<th>Packs</th>
-																	<th>Package Status</th>
-																	<th>Order Status</th>
 																</tr>
 															</thead>
 															<tbody>
 																@foreach ($order as $orderList)
 																	<tr>
-																		<td class="cell">{{ $orderList->order_id }}</td>
 																		<td class="cell">{{ $orderList->dist_ch }}</td>
-																		<td class="cell">{{ $orderList->sold_to_party_cust_code }}</td>
+																		<td class="cell">{{ $orderList->customer_code }}</td>
 																		<td class="cell">{{ $orderList->ship_to_cust_code }}</td>
 																		<td class="cell">{{ $orderList->material_no }}</td>
 																		<td class="cell">{{ $orderList->qty }}</td>
@@ -64,10 +91,8 @@
 																		<td class="cell">{{ number_format($orderList->value_mrp_less_50, 2) }}</td>
 																		<td class="cell">{{ number_format($orderList->total_value_mrp_less_50, 2) }}</td>
 																		<td class="cell">{{ $orderList->segment }}</td>
-																		<td class="cell">{{ $orderList->no_of_packs }}</td>
-																		<td class="cell">{{ $orderList->std_packing_ok_not_ok }}</td>
-																		<td class="cell">{{ ucfirst($orderList->status) }}</td>
-																		<td>
+																		{{-- <td class="cell">{{ $orderList->no_of_packs }}</td> --}}
+																		{{-- <td>
 																			<div align="center">
 																				<button type="button" class="btn btn-success btn-sm btn-rounded" 
 																				onclick="window.location='{{ url('approvedOrder/'.Crypt::encryptString($orderList->order_id)) }}'">
@@ -75,7 +100,7 @@
 																				</button>
 																		
 																				</div>
-																		</td>
+																		</td> --}}
 																	</tr>
 																@endforeach
 															</tbody>
@@ -123,4 +148,20 @@
         });
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const fromDate = document.querySelector('input[name="from_date"]');
+        const toDate = document.querySelector('input[name="to_date"]');
+        const form = document.querySelector('form');
+
+        form.addEventListener("submit", function(event) {
+            if (fromDate.value && !toDate.value) {
+                alert("Please select To Date if From Date is selected.");
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+    });
+</script>
+
         <x-footer />

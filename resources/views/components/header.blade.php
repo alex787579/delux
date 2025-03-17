@@ -65,48 +65,50 @@
 						<img class="rounded-circle" style="width: 150px;" src="/logo/1.png" alt="logo">	
 		        </div><!--//app-branding-->  
 		        
-			    <nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
-				    <ul class="app-menu list-unstyled accordion" id="menu-accordion">
-					    <li class="nav-item">
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link active" href="/user-lists">
-						        <span class="nav-icon">
-						        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-house-door" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-		  <path fill-rule="evenodd" d="M7.646 1.146a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 .146.354v7a.5.5 0 0 1-.5.5H9.5a.5.5 0 0 1-.5-.5v-4H7v4a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5v-7a.5.5 0 0 1 .146-.354l6-6zM2.5 7.707V14H6v-4a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4h3.5V7.707L8 2.207l-5.5 5.5z"/>
-		  <path fill-rule="evenodd" d="M13 2.5V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5z"/>
-		</svg>
-						         </span>
-		                         <span class="nav-link-text">User List</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->
-						<li class="nav-item has-submenu">
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#submenu-1" aria-expanded="false" aria-controls="submenu-1">
-						        <span class="nav-icon">
-						        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-						        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-files" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-	  <path fill-rule="evenodd" d="M4 2h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 1a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H4z"/>
-	  <path d="M6 0h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2v-1a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1H4a2 2 0 0 1 2-2z"/>
-	</svg>
-						         </span>
-		                         <span class="nav-link-text">Orders</span>
-		                         <span class="submenu-arrow">
-		                             <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-chevron-down" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-	  <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-	</svg>
-	                             </span><!--//submenu-arrow-->
-					        </a><!--//nav-link-->
-					        <div id="submenu-1" class="collapse submenu submenu-1 m-2" data-bs-parent="#menu-accordion">
-						        <ul class="submenu-list list-unstyled">
-									<li class="submenu-item"><a class="submenu-link" href="/create-order">Create Order</li>
-									<li class="submenu-item"><a class="submenu-link" href="/order-trail">Order Trail</li>
-									<li class="submenu-item"><a class="submenu-link" href="/upload">Order List</li>
-							        <li class="submenu-item"><a class="submenu-link" href="/order-files">Order List Files</a></li>
-						        </ul>
-					        </div>
-					    </li><!--//nav-item-->			    
-				    </ul><!--//app-menu-->
-			    </nav><!--//app-nav-->
+				<nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
+					<ul class="app-menu list-unstyled accordion" id="menu-accordion">
+						<li class="nav-item">
+							<?php if (session('role') == 'admin'): ?>
+							<a class="nav-link active" href="/user-lists">
+								<span class="nav-icon"><i class="fas fa-users"></i></span>
+								<span class="nav-link-text">User List</span>
+							</a>
+							<?php endif; ?>
+						</li>
+						<?php if (session('role') == 'user'): ?>
+						<li class="nav-item">
+							<a class="nav-link" href="/create-order">
+								<span class="nav-icon"><i class="fas fa-plus-square"></i></span>
+								<span class="nav-link-text">Order Creation</span>
+							</a>
+						</li>
+						<?php endif; ?>
+						<li class="nav-item">
+							<a class="nav-link" href="/order-trail">
+								<span class="nav-icon"><i class="fas fa-tasks"></i></span>
+								<span class="nav-link-text">My Orders</span>
+							</a>
+						</li>
+				
+						<li class="nav-item">
+							<a class="nav-link" href="/order-list">
+								<span class="nav-icon"><i class="fas fa-list-alt"></i></span>
+								<span class="nav-link-text">View Orders</span>
+							</a>
+						</li>
+						<?php if (session('role') == 'admin' || session('role') == 'sales'): ?>
+						<li class="nav-item">
+							<a class="nav-link" href="/order-create-admin">
+								<span class="nav-icon"><i class="fas fa-list-alt"></i></span>
+								<span class="nav-link-text">Admin Order Creation</span>
+							</a>
+						</li>
+						<?php endif; ?>
+					</ul>
+				</nav>
+				
+				
+			  
 			    <div class="app-sidepanel-footer">
 
 			    </div><!--//app-sidepanel-footer-->

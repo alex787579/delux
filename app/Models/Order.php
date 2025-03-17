@@ -14,14 +14,20 @@ class Order extends Model
     // protected $guarded = [];
 
     protected $fillable = [
-        'std_pkg',
-        'qty',
-        'material_no',
-        'order_type',
-        'segment',
-        'value_mrp_less_50',
-        'status'
+        'std_pkg', 'qty', 'material_no', 'segment', 'customer_code', 'order_id',
+        'total_value_mrp_less_50', 'value_mrp_less_50', 'order_value', 'created_by', 
+        'no_of_packs', 'customer_id','dist_ch','ship_to_customer_code','status'
     ];
+
+    // protected $fillable = [
+    //     'std_pkg',
+    //     'qty',
+    //     'material_no',
+    //     'order_type',
+    //     'segment',
+    //     'value_mrp_less_50',
+    //     'status'
+    // ];
 
     // protected $fillable = [
     //     // 'dist_ch', 'sold_to_party_cust_code', 'ship_to_cust_code', 'material_no', 

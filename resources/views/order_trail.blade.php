@@ -7,10 +7,18 @@
 	    <div class="app-content pt-3 p-md-3 p-lg-4">
 		    <div class="container-xl">
 			    
-			    <h1 class="app-page-title">Order List</h1>
 
-              <a href="{{ url('/export/orders/xlsx') }}" class="btn btn-success">Export to Excel</a>
-			  <a href="{{ url('/export/orders/csv') }}" class="btn btn-primary">Export to CSV</a>
+                <div class="mb-2 d-flex align-items-center gap-2">
+                    <a href="{{ url('/export-order-trail/xlsx') }}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel" style="color: white;"></i>
+                    </a>
+                    <a href="{{ url('/export-order-trail/csv') }}" class="btn btn-sm btn-primary">
+                        <i class="fas fa-file-csv" style="color: white;"></i>
+                    </a>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-success text-white" onclick="submitSelectedOrders()">Submit Order</button>
+                    </div>
+                </div>
   
 			    
 			    <div class="app-card shadow-sm mb-4 " role="alert">
@@ -31,6 +39,14 @@
 										<div class="tab-pane fade show active" id="orders-all" role="tabpanel" aria-labelledby="orders-all-tab">
 											<div class="app-card app-card-orders-table shadow-sm mb-5">
 												<div class="app-card-body">
+                                        <!-- Order Summary Box -->
+                                        <div class="app-card shadow-sm mb-4 p-3 bg-light" id="orderSummary" style="display: none;">
+                                            <h6 class="mb-3"><i class="fas fa-shopping-cart"></i> Order Summary</h6>
+                                            <p><strong>Selected Orders:</strong> <span id="selectedOrdersCount">0</span></p>
+                                            <p><strong>Total Quantity:</strong> <span id="totalQty">0</span></p>
+                                            <p><strong>Total Price:</strong> ₹<span id="totalPrice">0.00</span></p>
+                                        </div>
+
 													<div class="table-responsive">
 														
 														<form id="bulkOrderForm">
@@ -45,8 +61,6 @@
                                                                         <th>Material Price</th>
                                                                         <th>Total Price</th>
                                                                         <th>Segment</th>
-                                                                        <th>Packs</th>
-                                                                        <th>Package Status</th>
                                                                         <th>Order Status</th>
                                                                         <th>Actions</th> <!-- Edit & Delete -->
                                                                     </tr>
@@ -55,7 +69,8 @@
                                                                     @foreach ($order as $orderList)
                                                                         <tr>
                                                                             <td>
-                                                                                <input type="checkbox" class="orderCheckbox" name="order_ids[]" value="{{ $orderList->id }}">
+                                                                                <input type="checkbox" data-qty="{{ $orderList->qty }}"
+                                                                                data-price="{{ $orderList->total_value_mrp_less_50 }}" class="orderCheckbox" name="order_ids[]" value="{{ $orderList->id }}">
                                                                             </td>
                                                                             <td class="cell">{{ $orderList->material_no }}</td>
                                                                             <td class="cell">{{ $orderList->qty }}</td>
@@ -63,28 +78,38 @@
                                                                             <td class="cell">{{ number_format($orderList->value_mrp_less_50, 2) }}</td>
                                                                             <td class="cell">{{ number_format($orderList->total_value_mrp_less_50, 2) }}</td>
                                                                             <td class="cell">{{ $orderList->segment }}</td>
-                                                                            <td class="cell">{{ $orderList->no_of_packs }}</td>
-                                                                            <td class="cell">{{ $orderList->std_packing_ok_not_ok }}</td>
                                                                             <td class="cell">{{ ucfirst($orderList->status) }}</td>
-                                                                            <td>
-                                                                                <a href="{{ route('edit-trail-order', ['id' => Crypt::encryptString($orderList->id)]) }}" class="btn btn-primary btn-sm">
-                                                                                    <i class="fa fa-edit"></i>
-                                                                                </a>
-                                                                                {{-- <button type="button" class="btn btn-primary btn-sm" onclick="openEditModal({{ $orderList->id }}, '{{ $orderList->material_no }}', {{ $orderList->qty }})">
-                                                                                    ✏️ Edit
-                                                                                </button> --}}
-                                                                                <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $orderList->id }})">
-                                                                                    🗑️ 
-                                                                                </button>
-                                                                            </td>
+                                                                                <td>
+                                                                                    @if (session('role') == 'user' && $orderList->status == 'P')
+                                                                                    <!-- User can Edit & Delete when status is 'P' -->
+                                                                                    <a href="{{ route('edit-trail-order', ['id' => Crypt::encryptString($orderList->id)]) }}" class="btn btn-primary btn-sm">
+                                                                                        <i class="fa fa-edit"></i>
+                                                                                    </a>
+                                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $orderList->id }})">
+                                                                                        🗑️
+                                                                                    </button>
+                                                                        
+                                                                                @elseif (session('role') == 'admin' && $orderList->status == 'I')
+                                                                                    <!-- Admin can Edit & Delete when status is 'I' -->
+                                                                                    <a href="{{ route('edit-trail-order', ['id' => Crypt::encryptString($orderList->id)]) }}" class="btn btn-primary btn-sm">
+                                                                                        <i class="fa fa-edit"></i>
+                                                                                    </a>
+                                                                                    <button type="button" class="btn btn-danger btn-sm" onclick="confirmDelete({{ $orderList->id }})">
+                                                                                        🗑️
+                                                                                    </button>
+                                                                        
+                                                                                @elseif (session('role') == 'user' && $orderList->status == 'I')
+                                                                                    <!-- User sees a message instead of Edit/Delete when status is 'I' -->
+                                                                                    <span class="text-muted">Not Editable</span>
+                                                                        
+                                                                                @endif
+                                                                                </td>   
                                                                         </tr>
                                                                     @endforeach
                                                                 </tbody>
                                                             </table>
                                                         
-                                                            <div class="mt-3">
-                                                                <button type="button" class="btn btn-primary" onclick="submitSelectedOrders()">Submit Selected</button>
-                                                            </div>
+
                                                         </form>
                                                         
 														
@@ -93,99 +118,7 @@
 												   
 												</div><!--//app-card-body-->		
 											</div><!--//app-card-->
-					
-
-                                            {{-- Modals Code  --}}
-
-                                            <!-- Bootstrap Modal for Editing -->
-<div class="modal fade" id="editOrderModal" tabindex="-1" aria-labelledby="editOrderLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editOrderLabel">Edit Order</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="addwfm">
-                    @csrf
-                    <div class="row">
-            
-                    <div class="row mt-3">
-                        <div class="col-md-4">
-                           <label class="form-label">Material No</label>
-                           <select id="materialSelect" name="material_no" class="form-control">
-                            <option value="">Search and Select Material</option>
-                        </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Standard Package</label>
-                            <input type="number" readonly class="form-control" id="std_pkg" name="std_pkg">
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Value MRP Less 50</label>
-                            <input type="text" step="0.01" readonly id="value_mrp_less_50" class="form-control" name="value_mrp_less_50">
-                        </div>
-
-
-                    
-                    </div>
-            
-                    <div class="row mt-3">
-
-
-                        <div class="col-md-4">
-                            <label class="form-label">Segment</label>
-                            <input type="text" readonly id="segment" class="form-control" name="segment">
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Order Type</label>
-                            <select id="orderType" name="order_type" class="form-control">
-                                <option selected disabled>Select Order</option>
-                                <option value="Regular">Regular</option>
-                                <option value="Advance">Advance</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Quantity</label>
-                            <input type="number" class="form-control" id="qty" name="qty">
-                        </div>
-                       
-                    </div>
-            
-
-            
-                    {{-- <div class="mt-4">
-                        <button type="button" class="btn btn-primary" onclick="submitForm()">Add</button>
-                        <button type="reset" class="btn btn-secondary">Reset</button>
-                    </div> --}}
-                </form>
-            </div>
-            {{-- <div class="modal-body">
-                <input type="hidden" id="editOrderId">
-                <div class="form-group">
-                    <label>Material Number</label>
-                    <input type="text" id="editMaterialNo" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Quantity</label>
-                    <input type="number" id="editQuantity" class="form-control">
-                </div>
-            </div> --}}
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="updateOrder()">Save changes</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-                                            {{-- Modals Code  --}}
+				
 											
 										</div><!--//tab-pane-->
 										
@@ -232,72 +165,39 @@
 // Function to Submit Selected Orders
 function submitSelectedOrders() {
     var selectedOrders = [];
-    var orderDetails = "<table class='table'><thead><tr><th>Material Number</th><th>Quantity</th><th>Standard Package</th><th>Material Price</th><th>Total Price</th><th>Segment</th></tr></thead><tbody>";
-    
-    $(".orderCheckbox:checked").each(function() {
-        var row = $(this).closest("tr");
-        var materialNumber = row.find("td:eq(1)").text();
-        var quantity = row.find("td:eq(2)").text();
-        var standardPackage = row.find("td:eq(3)").text();
-        var materialPrice = row.find("td:eq(4)").text();
-        var totalPrice = row.find("td:eq(5)").text();
-        var segment = row.find("td:eq(6)").text();
 
+    $(".orderCheckbox:checked").each(function() {
         selectedOrders.push($(this).val());
-        orderDetails += `<tr><td>${materialNumber}</td><td>${quantity}</td><td>${standardPackage}</td><td>${materialPrice}</td><td>${totalPrice}</td><td>${segment}</td></tr>`;
     });
-    
-    orderDetails += "</tbody></table>";
 
     if (selectedOrders.length === 0) {
-        Swal.fire({
-            icon: "error",
-            title: "❌ No Orders Selected",
-            text: "Please select at least one order!"
-        });
+        alert("❌ No Orders Selected\nPlease select at least one order!");
         return;
     }
 
-    Swal.fire({
-        title: "Confirm Submission",
-        html: `<p>Are you sure you want to submit the selected orders?</p>${orderDetails}`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "✅ Submit",
-        cancelButtonText: "❌ Cancel",
-        customClass: {
-            popup: "swal-wide"
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.ajax({
-                url: "submit-trail-orders",
-                type: "POST",
-                data: {
-                    _token: $("input[name=_token]").val(),
-                    order_ids: selectedOrders
-                },
-                success: function(response) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "✅ Orders Submitted",
-                        text: "Your selected orders have been submitted successfully!"
-                    }).then(() => {
-                        location.reload();
-                    });
-                },
-                error: function(xhr) {
-                    let errorMessage = "Something went wrong. Please try again!";
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
-                    }
-                    Swal.fire({
-                        icon: "error",
-                        title: "❌ Submission Failed",
-                        text: errorMessage
-                    });
-                }
-            });
+    var confirmation = confirm("Are you sure you want to submit the selected orders?");
+    if (!confirmation) {
+        return;
+    }
+
+    $.ajax({
+        url: "submit-trail-orders",
+        type: "POST",
+        data: {
+            _token: $("input[name=_token]").val(),
+            order_ids: selectedOrders
+        },
+        success: function(response) {
+            console.log(response)
+            alert("✅ Orders Submitted\nYour selected orders have been submitted successfully!");
+            location.reload();
+        },
+        error: function(xhr) {
+            let errorMessage = "Something went wrong. Please try again!";
+            if (xhr.responseJSON && xhr.responseJSON.message) {
+                errorMessage = xhr.responseJSON.message;
+            }
+            alert("❌ Submission Failed\n" + errorMessage);
         }
     });
 }
@@ -371,6 +271,50 @@ $(document).ready(function() {
     });
 });
 
+
+
+document.addEventListener("DOMContentLoaded", function() {
+    const checkboxes = document.querySelectorAll(".orderCheckbox");
+    const selectAll = document.getElementById("selectAll");
+    const orderSummary = document.getElementById("orderSummary");
+    const selectedOrdersCount = document.getElementById("selectedOrdersCount");
+    const totalQty = document.getElementById("totalQty");
+    const totalPrice = document.getElementById("totalPrice");
+
+    function updateSummary() {
+        let selectedCount = 0;
+        let totalQuantity = 0;
+        let totalOrderPrice = 0;
+
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                selectedCount++;
+                totalQuantity += parseInt(checkbox.getAttribute("data-qty"));
+                totalOrderPrice += parseFloat(checkbox.getAttribute("data-price"));
+            }
+        });
+
+        selectedOrdersCount.textContent = selectedCount;
+        totalQty.textContent = totalQuantity;
+        totalPrice.textContent = totalOrderPrice.toFixed(2);
+
+        // Show summary only if at least one item is selected
+        orderSummary.style.display = selectedCount > 0 ? "block" : "none";
+    }
+
+    // Event listeners for checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener("change", updateSummary);
+    });
+
+    // Select All checkbox functionality
+    selectAll.addEventListener("change", function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+        updateSummary();
+    });
+});
 
 </script>
         <x-footer />

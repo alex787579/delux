@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AdminOrderController;
+use App\Http\Controllers\AuthController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -17,9 +19,11 @@ Route::view('/login','login');
 Route::post('/loggedIn', [\App\Http\Controllers\AuthController::class,'store']);
 
 Route::middleware(['checkUser'])->group(function () {
-    Route::get('/', function () {
-        return view('welcome');
-    });
+    
+    // Route::get('/', function () {
+    //     return view('welcome');
+    // });
+    Route::get('/', [OrderController::class, 'OrderTrail']);
 
 
     Route::get('/get-materials', [OrderController::class, 'getMaterials']);
@@ -34,7 +38,7 @@ Route::middleware(['checkUser'])->group(function () {
     // Route::post('/upload', [\App\Http\Controllers\FileUploadController::class, 'uploadFile'])->name('file.upload');
     
     
-    Route::get('/upload', [OrderController::class, 'uploadForm']);
+    Route::get('/order-list', [OrderController::class, 'uploadForm']);
     Route::post('/upload', [OrderController::class, 'uploads'])->name('upload.file');
     Route::get('/order-files', [OrderController::class, 'OrderFiles']);
     Route::get('/order-trail', [OrderController::class, 'OrderTrail']);
@@ -53,11 +57,20 @@ Route::post('/update-order-trail/{id}', [OrderController::class, 'update'])->nam
     // E:\sanket-project\delux-project\resources\views\order_create.blade.php
     // Create Order
     Route::get('/create-order', [OrderController::class, 'createOrder']);
+    Route::get('/order-create-admin', [AdminOrderController::class, 'index']);
     
     Route::get('/export/orders/{format}', [OrderController::class, 'exportOrders']);
+    Route::get('/export-order-trail/{format}', [OrderController::class, 'exportOrderTrail']);
+
     Route::get('/download/{filename}', [\App\Http\Controllers\FileUploadController::class, 'download'])->name('file.download');
     Route::get('/approvedOrder/{id}', [\App\Http\Controllers\OrderController::class, 'approvedOrder'])
         ->name('order.approve');
+
+        Route::post('/export-orders', [OrderController::class, 'exportOrdersList'])->name('export-orders');
+
+        Route::get('/get-users', [AuthController::class, 'getUsers']);
+        Route::post('/admin_store-material-order', [AdminOrderController::class, 'store']);
+        
 });
 
 

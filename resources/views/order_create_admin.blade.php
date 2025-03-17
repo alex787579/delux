@@ -25,6 +25,14 @@
                         <input type="hidden" id="dist_ch" class="form-control" name="dist_ch"  placeholder="Enter here.." readonly>
                         <div class="row mt-3">
                             <div class="col-md-4">
+                                <label class="form-label">Customer Id</label>
+                                <select id="CustomerSelect" name="customer_code" class="form-control">
+                                    <option value="">Search and Select Customer</option>
+                                </select>
+                                <span class="text-danger error-message" id="error-customer"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
                                 <label class="form-label">Material No</label>
                                 <select id="materialSelect" name="material_no" class="form-control">
                                     <option value="">Search and Select Material</option>
@@ -38,19 +46,22 @@
                                 <span class="text-danger error-message" id="error-std_pkg"></span>
                             </div>
                 
-                            <div class="col-md-4">
+                            
+                        </div>
+                
+                        <div class="row mt-3">
+
+                            <div class="col-md-2">
                                 <label class="form-label">MRP</label>
                                 <input type="text" step="0.01" readonly id="value_mrp_less_50" class="form-control" name="value_mrp_less_50"  placeholder="Enter here..">
                                 <span class="text-danger error-message" id="error-value_mrp_less_50"></span>
                             </div>
-                        </div>
-                
-                        <div class="row mt-3">
-                            {{-- <div class="col-md-4">
-                                <label class="form-label">Segment</label>
-                                <input type="text" readonly id="segment" class="form-control" name="segment"  placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-segment"></span>
-                            </div> --}}
+
+                            <div class="col-md-2">
+                                <label class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="qty" name="qty"  placeholder="Enter here..">
+                                <span class="text-danger error-message" id="error-qty"></span>
+                            </div>
                 
                             <div class="col-md-4">
                                 <label class="form-label">Order Type</label>
@@ -62,19 +73,14 @@
                                 <span class="text-danger error-message" id="error-order_type"></span>
                             </div>
                 
-                            <div class="col-md-4">
-                                <label class="form-label">Quantity</label>
-                                <input type="number" class="form-control" id="qty" name="qty"  placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-qty"></span>
-                            </div>
+                           
                             <div class="col-md-4">
                                 <label class="form-label">Ship to code</label>
                                 <input type="text" id="ship_to_customer_code" class="form-control" name="ship_to_customer_code" placeholder="Enter here..">
                                 <span class="text-danger error-message" id="error-ship_to_customer_code"></span>
                             </div>
                         </div>
-                
-
+            
                         <div class="mt-4">
                             <button type="button" class="btn btn-primary" onclick="submitForm()">Add</button>
                             <button type="reset" class="btn btn-secondary">Reset</button>
@@ -205,7 +211,7 @@ function submitForm() {
 
     jQuery.ajax({
         type: 'POST',
-        url: "{{url('store-material-order')}}",
+        url: "{{url('admin_store-material-order')}}",
         data: form_data,
         contentType: false,
         processData: false,
@@ -233,6 +239,31 @@ function submitForm() {
         }
     });
 }
+
+
+$(document).ready(function() {
+    // Initialize Select2 for Customer Search
+    $('#CustomerSelect').select2({
+        ajax: {
+            url: '/get-users',
+            dataType: 'json',
+            delay: 250,
+            data: function(params) {
+                return { search: params.term }; // Pass search term to backend
+            },
+            processResults: function(data) {
+                return {
+                    results: data.map(user => ({
+                        id: user.c_id,
+                        text: `${user.c_id} - ${user.c_name}`
+                    }))
+                };
+            }
+        }
+    });
+
+
+});
 
 </script>
 

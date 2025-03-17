@@ -12,7 +12,7 @@ class OrderTrail extends Model
     protected $table = 'orders_trail';
 
     protected $fillable = [
-        'status'
+        'status','customer_code'
     ];
 
     // protected $fillable = [

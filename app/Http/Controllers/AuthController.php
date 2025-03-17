@@ -30,25 +30,31 @@ class AuthController extends Controller
     {
 
         $validated = $request->validate([
-            'signin_email' => 'required|email|max:50',
+            'signin_email' => 'required|max:50',
             // 'signin_password' => 'required|min:6',
         ]);
         
            // Find user by email
-        $user = User::where('email', trim($request->signin_email))
-        ->where('is_active', 1)
+           $user = User::where(function ($query) use ($request) {
+            $query->where('c_id', trim($request->signin_email))
+                  ->orWhere('email', trim($request->signin_email))
+                  ->orWhere('mobile', trim($request->signin_email));
+        })
+        ->where('status', 'Active')
         ->first();
-
+    
         if (!$user) {
-        return back()->with('error', 'Invalid email or account is inactive.');
+            return back()->with('error', 'Invalid credentials or account is inactive.');
         }
-        $request->session()->put('UserRole', $user->role);
+        
+        $request->session()->put('role', $user->role);
         $request->session()->put('EMPID', $user->id);
         $request->session()->put('Email', $user->email);
-        $request->session()->put('CustomerCode', $user->CustomerCode);
+        $request->session()->put('c_id', $user->c_id);
         $request->session()->put('EMP_NAME', ucfirst($user->name));
-
-        return redirect('/')->with('success', 'Login successful!');
+        
+        return redirect('/order-trail')->with('success', 'Login successful!');
+    
  
     }
 
@@ -82,5 +88,19 @@ class AuthController extends Controller
     public function logout()
     {
         return redirect('/login'); // Redirect to the login page
+    }
+
+    public function getUsers(Request $request)
+    {
+        $search = $request->search;
+
+        $users = User::where('c_id', 'LIKE', "%{$search}%")
+        ->orWhere('c_name', 'LIKE', "%{$search}%")
+        ->limit(10) // Limit results to 10 for performance
+        ->get(['id', 'c_id', 'c_name']);
+
+      
+
+        return response()->json($users);
     }
 }

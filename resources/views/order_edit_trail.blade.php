@@ -8,11 +8,6 @@
 		    <div class="container-xl">
 			    
 			    <h1 class="app-page-title">Create Order {{session('EMPID')}}</h1>
-
-
-
-              {{-- <a href="{{ url('/export/orders/xlsx') }}" class="btn btn-success">Export to Excel</a>
-			  <a href="{{ url('/export/orders/csv') }}" class="btn btn-primary">Export to CSV</a> --}}
   
 			    
               <div class="app-card shadow-sm mb-4" role="alert">
@@ -24,73 +19,57 @@
                     <div class="alert alert-danger py-1 px-2 small">{{ session('error') }}</div>
                 @endif
 
-                @if(session('import_errors'))
-                    <div class="alert alert-warning py-1 px-2 small">
-                        <strong>Import Errors:</strong>
-                        @foreach(session('import_errors') as $error)
-                            <p class="mb-1">{{ $error }}</p>
-                        @endforeach
-                    </div>
-                @endif
         
                 
                 <form id="updatewfm">
                     @csrf
                     <div class="row p-5">
-            
-                    <div class="row mt-3">
-                        <div class="col-md-4">
-                           <label class="form-label">Material No</label>
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Material No</label>
                            <select id="materialSelect"value="{{ $order->material_no }}" name="material_no" class="form-control">
-                            <option value="">Search and Select Material</option>
-                        </select>
+                                    <option value="">Search and Select Material</option>
+                                </select>
+                            </div>
+                
+                            <div class="col-md-4">
+                                <label class="form-label">Standard Package</label>
+                            <input type="number" readonly class="form-control" id="std_pkg" value="{{ $order->std_pkg }}" name="std_pkg">
+                            </div>
+                
+                            <div class="col-md-4">
+                                <label class="form-label">Value MRP Less 50</label>
+                                <input type="text" step="0.01" readonly id="value_mrp_less_50"  value="{{ $order->value_mrp_less_50 }}" class="form-control" name="value_mrp_less_50">
+                            </div>
                         </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Standard Package</label>
-                            <input type="number" readonly class="form-control" id="std_pkg"value="{{ $order->std_pkg }}" name="std_pkg">
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Value MRP Less 50</label>
-                            <input type="text" step="0.01" readonly id="value_mrp_less_50" class="form-control"value="{{ $order->value_mrp_less_50 }}" name="value_mrp_less_50">
-                        </div>
-
-
-                    
-                    </div>
-            
-                    <div class="row mt-3">
-
-
-                        <div class="col-md-4">
-                            <label class="form-label">Segment</label>
-                            <input type="text" readonly id="segment" class="form-control"value="{{ $order->segment }}" name="segment">
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Order Type</label>
-                            <select id="orderType" name="order_type" class="form-control">
+                
+                        <div class="row mt-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Segment</label>
+                                <input type="text" readonly id="segment" class="form-control" value="{{ $order->segment }}" name="segment">
+                            </div>
+                
+                            <div class="col-md-4">
+                                <label class="form-label">Order Type</label>
+                                <select id="orderType" name="order_type" class="form-control">
                                 <option disabled>Select Order</option>
                                 <option value="Regular" {{ $order->order_type == 'Regular' ? 'selected' : '' }}>Regular</option>
                                 <option value="Advance" {{ $order->order_type == 'Advance' ? 'selected' : '' }}>Advance</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-4">
-                            <label class="form-label">Quantity</label>
+                                </select>
+                            </div>
+                
+                            <div class="col-md-4">
+                                <label class="form-label">Quantity</label>
                             <input type="number" class="form-control" id="qty" value="{{ $order->qty }}" name="qty">
                         </div>
-                       
-                    </div>
-            
-
-            
-                    <div class="mt-4">
-                        <button type="button" class="btn btn-primary" onclick="submitForm()">Add</button>
-                        <button type="reset" class="btn btn-secondary">Reset</button>
+                
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-primary" onclick="submitForm()">Update</button>
+                            <button type="reset" class="btn btn-secondary">Reset</button>
+                        </div>
                     </div>
                 </form>
+                
             </div>
             
 				    
@@ -166,12 +145,13 @@ let selectedMaterial = "{{ $order->material_no }}";
     });
 });
 
-
 function submitForm() {
+    var form_data = $('#updatewfm').serialize();
+
     $.ajax({
         url: "/update-order-trail/{{ $order->id }}",
         type: "POST",
-        data: $('#updatewfm').serialize(),
+        data: form_data,
         success: function(response) {
             if (response.success) {
                 alert("Order updated successfully!");
@@ -179,9 +159,27 @@ function submitForm() {
             } else {
                 alert("Failed to update order!");
             }
+        },
+        error: function(xhr) {
+            if (xhr.status === 422) { // Laravel validation error
+                var errors = xhr.responseJSON.errors;
+                $('.error-message').remove(); // Remove previous error messages
+
+                $.each(errors, function (key, messages) {
+                    let field = $('[name="' + key + '"]'); // Select by name attribute
+
+                    // Ensure field exists before appending error message
+                    if (field.length > 0) {
+                        field.after('<span class="text-danger error-message">' + messages[0] + '</span>');
+                    }
+                });
+            } else {
+                alert("Something went wrong!");
+            }
         }
     });
 }
+
 
 // function submitForm() {
 //     var form_data = new FormData($('#addwfm')[0]);
