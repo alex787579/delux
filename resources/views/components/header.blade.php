@@ -67,14 +67,7 @@
 		        
 				<nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
 					<ul class="app-menu list-unstyled accordion" id="menu-accordion">
-						<li class="nav-item">
-							<?php if (session('role') == 'admin'): ?>
-							<a class="nav-link active" href="/user-lists">
-								<span class="nav-icon"><i class="fas fa-users"></i></span>
-								<span class="nav-link-text">User List</span>
-							</a>
-							<?php endif; ?>
-						</li>
+
 						<?php if (session('role') == 'user'): ?>
 						<li class="nav-item">
 							<a class="nav-link" href="/create-order">
@@ -108,10 +101,19 @@
 						<li class="nav-item">
 							<a class="nav-link" href="/order-create-admin">
 								<span class="nav-icon"><i class="fas fa-list-alt"></i></span>
-								<span class="nav-link-text">Admin Order Creation</span>
+								<span class="nav-link-text">Order Creation</span>
 							</a>
 						</li>
 						<?php endif; ?>
+
+						<li class="nav-item">
+							<?php if (session('role') == 'admin'): ?>
+							<a class="nav-link active" href="/user-lists">
+								<span class="nav-icon"><i class="fas fa-users"></i></span>
+								<span class="nav-link-text">User List</span>
+							</a>
+							<?php endif; ?>
+						</li>
 					</ul>
 				</nav>
 				

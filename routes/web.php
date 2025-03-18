@@ -51,6 +51,7 @@ Route::middleware(['checkUser'])->group(function () {
 
     // Material Management
     Route::get('/get-materials', [OrderController::class, 'getMaterials']);
+    Route::get('/get-cart-count', [OrderController::class, 'getCartCount']);
 
     // User Management
     Route::get('/user-lists', [AuthController::class, 'create']);

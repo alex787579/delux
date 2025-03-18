@@ -5,89 +5,85 @@
     <div class="app-wrapper">
 	    
 	    <div class="app-content pt-3 p-md-3 p-lg-4">
-		    <div class="container-xl">  
-			<h1 class="app-page-title">Create Order</h1>
-              <div class="app-card shadow-sm mb-4">
-                @if (session('success'))
-                <div class="alert alert-success py-1 px-2 small">{{ session('success') }}</div>
-                @endif
-
-                @if (session('error'))
-                    <div class="alert alert-danger py-1 px-2 small">{{ session('error') }}</div>
-                @endif
+            <div class="container-xl">  
+                <h1 class="app-page-title">
+                    Create Order 
+                    <span class="cart-container" style="float: right; cursor: pointer;" onclick="redirectToOrderTrail()">
+                        🛒 <span id="cart-count" class="badge bg-danger">0</span>
+                    </span>
+                </h1>
             
-                
-                <form id="addwfm">
-                    @csrf
-                    <div class="row p-5">
-                        <input type="hidden" class="form-control" id="no_of_packs" name="no_of_packs"  placeholder="Enter here.." readonly>
-                        <input type="hidden" readonly id="segment" class="form-control" name="segment"  placeholder="Enter here.." readonly>
-                        <input type="hidden" id="dist_ch" class="form-control" name="dist_ch"  placeholder="Enter here.." readonly>
-                        <div class="row mt-3">
-                            <div class="col-md-4">
-                                <label class="form-label">Material No</label>
-                                <select id="materialSelect" name="material_no" class="form-control">
-                                    <option value="">Search and Select Material</option>
-                                </select>
-                                <span class="text-danger error-message" id="error-material_no"></span>
+                <div class="app-card shadow-sm mb-4">
+                    @if (session('success'))
+                        <div class="alert alert-success py-1 px-2 small">{{ session('success') }}</div>
+                    @endif
+            
+                    @if (session('error'))
+                        <div class="alert alert-danger py-1 px-2 small">{{ session('error') }}</div>
+                    @endif
+            
+                    <form id="addOrderForm">
+                        @csrf
+                        <div class="row p-5">
+                            <input type="hidden" id="dist_ch" name="dist_ch">
+                            <input type="hidden" id="no_of_packs" name="no_of_packs">
+                            <input type="hidden" id="segment" name="segment">
+            
+                            <div class="row mt-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Material No</label>
+                                    <select id="materialSelect" name="material_no" class="form-control">
+                                        <option value="">Search and Select Material</option>
+                                    </select>
+                                    <span class="text-danger error-message" id="error-material_no"></span>
+                                </div>
+            
+                                <div class="col-md-4">
+                                    <label class="form-label">Standard Package</label>
+                                    <input type="number" readonly class="form-control" id="std_pkg" name="std_pkg">
+                                    <span class="text-danger error-message" id="error-std_pkg"></span>
+                                </div>
+            
+                                <div class="col-md-4">
+                                    <label class="form-label">MRP</label>
+                                    <input type="text" readonly id="value_mrp_less_50" class="form-control" name="value_mrp_less_50">
+                                    <span class="text-danger error-message" id="error-value_mrp_less_50"></span>
+                                </div>
                             </div>
-                
-                            <div class="col-md-4">
-                                <label class="form-label">Standard Package</label>
-                                <input type="number" readonly class="form-control" id="std_pkg" name="std_pkg"  placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-std_pkg"></span>
+            
+                            <div class="row mt-3">
+                                <div class="col-md-4">
+                                    <label class="form-label">Order Type</label>
+                                    <select id="orderType" name="order_type" class="form-control">
+                                        <option selected disabled value="">Select Order</option>
+                                        <option value="Regular">Regular</option>
+                                        <option value="Advance">Advance</option>
+                                    </select>
+                                    <span class="text-danger error-message" id="error-order_type"></span>
+                                </div>
+            
+                                <div class="col-md-4">
+                                    <label class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" id="qty" name="qty">
+                                    <span class="text-danger error-message" id="error-qty"></span>
+                                </div>
+            
+                                <div class="col-md-4">
+                                    <label class="form-label">Ship to code</label>
+                                    <input type="text" id="ship_to_customer_code" class="form-control" name="ship_to_customer_code">
+                                    <span class="text-danger error-message" id="error-ship_to_customer_code"></span>
+                                </div>
                             </div>
-                
-                            <div class="col-md-4">
-                                <label class="form-label">MRP</label>
-                                <input type="text" step="0.01" readonly id="value_mrp_less_50" class="form-control" name="value_mrp_less_50"  placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-value_mrp_less_50"></span>
+            
+                            <div class="mt-4">
+                                <button type="button" class="btn btn-primary" onclick="submitOrder()">Add to Cart</button>
+                                <button type="reset" class="btn btn-secondary">Reset</button>
                             </div>
                         </div>
-                
-                        <div class="row mt-3">
-                            {{-- <div class="col-md-4">
-                                <label class="form-label">Segment</label>
-                                <input type="text" readonly id="segment" class="form-control" name="segment"  placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-segment"></span>
-                            </div> --}}
-                
-                            <div class="col-md-4">
-                                <label class="form-label">Order Type</label>
-                                <select id="orderType" name="order_type" class="form-control">
-                                    <option selected disabled value="">Select Order</option>
-                                    <option value="Regular">Regular</option>
-                                    <option value="Advance">Advance</option>
-                                </select>
-                                <span class="text-danger error-message" id="error-order_type"></span>
-                            </div>
-                
-                            <div class="col-md-4">
-                                <label class="form-label">Quantity</label>
-                                <input type="number" class="form-control" id="qty" name="qty"  placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-qty"></span>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Ship to code</label>
-                                <input type="text" id="ship_to_customer_code" class="form-control" name="ship_to_customer_code" placeholder="Enter here..">
-                                <span class="text-danger error-message" id="error-ship_to_customer_code"></span>
-                            </div>
-                        </div>
-                
-
-                        <div class="mt-4">
-                            <button type="button" class="btn btn-primary" onclick="submitForm()">Add</button>
-                            <button type="reset" class="btn btn-secondary">Reset</button>
-                        </div>
-                    </div>
-                </form>
-                
+                    </form>
+                </div>
             </div>
             
-				    
-
-			    
-		    </div><!--//container-fluid-->
 	    </div><!--//app-content-->
 	    
 
@@ -152,16 +148,16 @@
 
 
 
-function submitForm() {
+function submitOrder() {
     $('.error-message').text(''); // Clear previous errors
     let isValid = true;
 
-    // Check required fields
+    // Validate input fields
     if ($('#materialSelect').val() === '') {
         $('#error-material_no').text('Material No is required.');
         isValid = false;
     }
-    if ($('#orderType').val() == '') {
+    if ($('#orderType').val() === '') {
         $('#error-order_type').text('Order Type is required.');
         isValid = false;
     }
@@ -169,55 +165,31 @@ function submitForm() {
         $('#error-qty').text('Quantity is required.');
         isValid = false;
     }
-    if ($('#dist_ch').val() == '') {
-        $('#error-dist_ch').text('DIST CH is required.');
-        isValid = false;
-    }
 
-    if ($('#no_of_packs').val() === '') {
-        $('#error-no_of_packs').text('No of Pack is required.');
-        isValid = false;
-    }
+    if (!isValid) return; // Stop if validation fails
 
-    // if ($('#ship_to_customer_code').val() === '') {
-    // $('#error-ship_to_customer_code').text('SHIP TO cust code is required.');
-    // isValid = false;
-    // }
+    var formData = new FormData($('#addOrderForm')[0]);
 
-    let qty = parseFloat($('#qty').val());
-    let stdPkg = parseFloat($('#std_pkg').val()); // Ensure `std_pkg` has a valid value
-
-    if (!isNaN(qty) && !isNaN(stdPkg) && qty < stdPkg) {
-        $('#error-qty').text('Quantity cannot be less than STD PKG.');
-        isValid = false;
-    }
-
-
-    if (!isValid) return; // Stop submission if there are validation errors
-
-    var form_data = new FormData($('#addwfm')[0]);
-
-    jQuery.ajaxSetup({
+    $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         }
     });
 
-    jQuery.ajax({
+    $.ajax({
         type: 'POST',
-        url: "{{url('store-material-order')}}",
-        data: form_data,
+        url: "{{ url('store-material-order') }}",
+        data: formData,
         contentType: false,
         processData: false,
-        success: function (result) {
-            if (result.success) {
+        success: function (response) {
+            if (response.success) {
                 alert('Order added successfully!');
-               location.reload(); // Reset form
-                $('.error-message').remove(); // Remove previous error messages
+                updateCartCount(); // Update cart count without refreshing
             }
         },
         error: function (xhr) {
-            if (xhr.status === 422) { // Laravel validation error
+            if (xhr.status === 422) { // Laravel validation errors
                 var errors = xhr.responseJSON.errors;
                 $('.error-message').text(''); // Clear previous errors
 
@@ -233,6 +205,27 @@ function submitForm() {
         }
     });
 }
+
+// Function to update the cart count dynamically
+function updateCartCount() {
+    $.ajax({
+        url: "{{ url('get-cart-count') }}",
+        type: "GET",
+        success: function (response) {
+            $('#cart-count').text(response.count);
+        }
+    });
+}
+
+// Redirect to order trail page when cart is clicked
+function redirectToOrderTrail() {
+    window.location.href = "{{ url('order-trail') }}";
+}
+
+// Call function to update cart count on page load
+$(document).ready(function() {
+    updateCartCount();
+});
 
 </script>
 

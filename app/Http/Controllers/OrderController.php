@@ -266,6 +266,14 @@ public function exportOrders($format)
     }
     
 
+    // Fetch the number of orders in the cart
+    public function getCartCount()
+    {
+        $customer_code = session('c_id');
+        $count = OrderTrail::where('customer_code', $customer_code)->where('status', 'P')->count();
+        
+        return response()->json(['count' => $count]);
+    }
 
     public function store(Request $request)
     {

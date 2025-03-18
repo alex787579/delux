@@ -6,7 +6,12 @@
 	    
 	    <div class="app-content pt-3 p-md-3 p-lg-4">
 		    <div class="container-xl">  
-			<h1 class="app-page-title">Create Order</h1>
+                <h1 class="app-page-title">
+                    Create Order 
+                    <span class="cart-container" style="float: right; cursor: pointer;" onclick="redirectToOrderTrail()">
+                        🛒 <span id="cart-count" class="badge bg-danger">0</span>
+                    </span>
+                </h1>
               <div class="app-card shadow-sm mb-4">
                 @if (session('success'))
                 <div class="alert alert-success py-1 px-2 small">{{ session('success') }}</div>
@@ -162,6 +167,12 @@ function submitForm() {
     $('.error-message').text(''); // Clear previous errors
     let isValid = true;
 
+      // Validate customer field
+      if ($('#CustomerSelect').val() === '') {
+        $('#error-customer').text('Customer is required.');
+        isValid = false;
+    }
+
     // Check required fields
     if ($('#materialSelect').val() === '') {
         $('#error-material_no').text('Material No is required.');
@@ -239,6 +250,27 @@ function submitForm() {
         }
     });
 }
+
+// Function to update the cart count dynamically
+function updateCartCount() {
+    $.ajax({
+        url: "{{ url('get-cart-count') }}",
+        type: "GET",
+        success: function (response) {
+            $('#cart-count').text(response.count);
+        }
+    });
+}
+
+// Redirect to order trail page when cart is clicked
+function redirectToOrderTrail() {
+    window.location.href = "{{ url('order-trail') }}";
+}
+
+// Call function to update cart count on page load
+$(document).ready(function() {
+    updateCartCount();
+});
 
 
 $(document).ready(function() {
