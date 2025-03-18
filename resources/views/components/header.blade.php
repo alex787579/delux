@@ -13,11 +13,11 @@
     <link rel="shortcut icon" href="favicon.ico"> 
     
     <!-- FontAwesome JS-->
-    <script defer src="/assets/plugins/fontawesome/js/all.min.js"></script>
+    <script defer src="{{ asset('/assets/plugins/fontawesome/js/all.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- App CSS -->  
-    <link id="theme-style" rel="stylesheet" href="/assets/css/portal.css">
+    <link id="theme-style" rel="stylesheet" href={{ asset('/assets/css/portal.css') }}>
 
 </head> 
 
@@ -89,7 +89,15 @@
 								<span class="nav-link-text">My Orders</span>
 							</a>
 						</li>
-				
+
+						<?php if (session('role') == 'admin'): ?>
+						<li class="nav-item">
+							<a class="nav-link" href="/pending-order">
+								<span class="nav-icon"><i class="fas fa-plus-square"></i></span>
+								<span class="nav-link-text">Pending Approval</span>
+							</a>
+						</li>
+						<?php endif; ?>
 						<li class="nav-item">
 							<a class="nav-link" href="/order-list">
 								<span class="nav-icon"><i class="fas fa-list-alt"></i></span>

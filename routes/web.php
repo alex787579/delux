@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminOrderController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FileUploadController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -15,63 +17,48 @@ use App\Http\Controllers\AuthController;
 |
 */
 
-Route::view('/login','login');
-Route::post('/loggedIn', [\App\Http\Controllers\AuthController::class,'store']);
+// Authentication Routes
+Route::view('/login', 'login');
+Route::post('/loggedIn', [AuthController::class, 'store']);
+Route::get('/logout', [AuthController::class, 'logout']);
 
+// Middleware-protected Routes
 Route::middleware(['checkUser'])->group(function () {
     
-    // Route::get('/', function () {
-    //     return view('welcome');
-    // });
+    // Dashboard / Home
     Route::get('/', [OrderController::class, 'OrderTrail']);
 
-
-    Route::get('/get-materials', [OrderController::class, 'getMaterials']);
-    
-    
-    Route::get('/logout', [\App\Http\Controllers\AuthController::class,'logout']);
-    
-    Route::get('/user-lists', [\App\Http\Controllers\AuthController::class,'create']);
-    // Route::post('/order-upload', [\App\Http\Controllers\FileUploadController::class,'uploadOrderFile']);
-    
-
-    // Route::post('/upload', [\App\Http\Controllers\FileUploadController::class, 'uploadFile'])->name('file.upload');
-    
-    
+    // Order Management
     Route::get('/order-list', [OrderController::class, 'uploadForm']);
-    Route::post('/upload', [OrderController::class, 'uploads'])->name('upload.file');
-    Route::get('/order-files', [OrderController::class, 'OrderFiles']);
+    Route::get('/pending-order', [OrderController::class, 'PendingOrder']);
     Route::get('/order-trail', [OrderController::class, 'OrderTrail']);
-
+    Route::post('/upload', [OrderController::class, 'uploads'])->name('upload.file');
     Route::post('/store-material-order', [OrderController::class, 'store']);
     Route::post('/submit-trail-orders', [OrderController::class, 'storeTrailOrders']);
-    
-    // ✅ Delete Order
-Route::delete('/delete-order/{id}', [OrderController::class, 'deleteOrder'])->name('order.delete');
 
-Route::get('/edit-trail-order/{id}', [OrderController::class, 'editOrder'])->name('edit-trail-order');
+    Route::delete('/delete-order/{id}', [OrderController::class, 'deleteOrder'])->name('order.delete');
+    Route::get('/edit-trail-order/{id}', [OrderController::class, 'editOrder'])->name('edit-trail-order');
+    Route::post('/update-order-trail/{id}', [OrderController::class, 'update'])->name('update.order.trail');
 
-Route::post('/update-order-trail/{id}', [OrderController::class, 'update'])->name('update.order.trail');
-
-    
-    // E:\sanket-project\delux-project\resources\views\order_create.blade.php
-    // Create Order
     Route::get('/create-order', [OrderController::class, 'createOrder']);
     Route::get('/order-create-admin', [AdminOrderController::class, 'index']);
-    
+
     Route::get('/export/orders/{format}', [OrderController::class, 'exportOrders']);
     Route::get('/export-order-trail/{format}', [OrderController::class, 'exportOrderTrail']);
+    Route::post('/export-orders', [OrderController::class, 'exportOrdersList'])->name('export-orders');
 
-    Route::get('/download/{filename}', [\App\Http\Controllers\FileUploadController::class, 'download'])->name('file.download');
-    Route::get('/approvedOrder/{id}', [\App\Http\Controllers\OrderController::class, 'approvedOrder'])
-        ->name('order.approve');
+    Route::get('/approvedOrder/{id}', [OrderController::class, 'approvedOrder'])->name('order.approve');
 
-        Route::post('/export-orders', [OrderController::class, 'exportOrdersList'])->name('export-orders');
+    // Material Management
+    Route::get('/get-materials', [OrderController::class, 'getMaterials']);
 
-        Route::get('/get-users', [AuthController::class, 'getUsers']);
-        Route::post('/admin_store-material-order', [AdminOrderController::class, 'store']);
-        
+    // User Management
+    Route::get('/user-lists', [AuthController::class, 'create']);
+    Route::get('/get-users', [AuthController::class, 'getUsers']);
+
+    // File Upload & Download
+    Route::get('/download/{filename}', [FileUploadController::class, 'download'])->name('file.download');
+
+    // Admin Order Management
+    Route::post('/admin_store-material-order', [AdminOrderController::class, 'store']);
 });
-
-
-

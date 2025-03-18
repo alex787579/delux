@@ -55,7 +55,7 @@ class AdminOrderController extends Controller
         $order->material_no = $request->material_no;
         $order->order_type = $request->order_type;
         $order->order_value = $order->value_mrp_less_50 * $order->qty;
-        $order->created_by =$request->customer_code;
+        $order->created_by = session('c_id');
         $order->order_id = $order_id;
         $order->status = 'P';
         $order->ship_to_customer_code = $request->ship_to_customer_code;

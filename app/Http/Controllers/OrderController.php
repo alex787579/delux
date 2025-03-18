@@ -170,20 +170,26 @@ public function exportOrders($format)
     {
         $customer_code = session('c_id');
         $user_role = strtolower(session('role')); // Assuming role is stored in session  
-    
-        // If the user is Admin, fetch only records with status 'I'
-        if ($user_role === 'admin') {
-            $model = OrderTrail::where('status', 'I')->get();
-        } 
-        // If the user is not Admin, fetch records where customer_code matches and status is 'P' or 'I'
-        else {
-            if (!$customer_code) {
-                return response()->json(['error' => 'Customer code not found in session'], 400);
-            }
-            $model = OrderTrail::where('customer_code', $customer_code)
-                                ->whereIn('status', ['P', 'I'])
+
+        
+        // // If the user is Admin, fetch only records with status 'I'
+        // if ($user_role === 'admin') {
+        //     $model = OrderTrail::where('status', 'I')->get();
+        // } 
+        // elseif ($user_role === 'sales') { 
+        //     $model = OrderTrail::where('created_by', $customer_code)
+        //     ->whereIn('status', ['P', 'I'])
+        //     ->get();
+        // }
+        // // If the user is not Admin, fetch records where customer_code matches and status is 'P' or 'I'
+        // else {
+        //     if (!$customer_code) {
+        //         return response()->json(['error' => 'Customer code not found in session'], 400);
+        //     }
+            $model = OrderTrail::where('created_by', $customer_code)
+                                ->whereIn('status', ['P','I'])
                                 ->get();
-        }
+        // }
     
         return view('order_trail', ['order' => $model]);
     }
@@ -211,7 +217,7 @@ public function exportOrders($format)
 
         foreach ($trails as $trail) {
             // If the order status is 'P' and the user is 'user', just update the status
-            if ($trail->status == 'P' && $userRole == 'user') {
+            if ($trail->status == 'P') {
                 $trail->update(['status' => 'I']); // Change status without creating an order
             }
             // If the order status is 'I' and the user is 'admin', create a new order
@@ -353,13 +359,7 @@ public function update(Request $request, $id)
 public function exportOrdersList(Request $request)
     {
 
-        // return $request->post();
-        // exit;
-        // $request->validate([
-        //     'customer_code' => 'required|string',
-        //     'from_date' => 'required|date',
-        //     'to_date' => 'required|date|after_or_equal:from_date',
-        // ]);
+
 
         $customerCode = $request->customer_code;
         $fromDate = $request->from_date;
@@ -369,6 +369,19 @@ public function exportOrdersList(Request $request)
         $fileName = 'orders_export_' . now()->format('Ymd_His') . '.xlsx';
 
         return Excel::download(new OrdersListExport($customerCode, $fromDate, $toDate), $fileName);
+    }
+
+    public function  PendingOrder(){
+        $customer_code = session('c_id');
+        $user_role = strtolower(session('role'));
+
+        $customer_code = session('c_id');
+        $user_role = strtolower(session('role')); // Assuming role is stored in session  
+
+            $model = OrderTrail::whereIn('status', ['I'])
+                                ->get();
+    
+        return view('order_trail', ['order' => $model]);
     }
 
 

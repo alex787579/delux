@@ -69,14 +69,13 @@
 																<tr>
 																	<th>Distributor Channel</th>
 																	<th>Bill to</th>
-																	<th>Ship to</th>
 																	<th>Material Number</th>
 																	<th>Quantity</th>
 																	{{-- <td>Action</td> --}}
 																	<th>Std Pkg</th>
 																	<th>Material Price</th>
 																	<th>Total Price</th>
-																	<th>Segment</th>
+		
 																</tr>
 															</thead>
 															<tbody>
@@ -84,23 +83,11 @@
 																	<tr>
 																		<td class="cell">{{ $orderList->dist_ch }}</td>
 																		<td class="cell">{{ $orderList->customer_code }}</td>
-																		<td class="cell">{{ $orderList->ship_to_cust_code }}</td>
 																		<td class="cell">{{ $orderList->material_no }}</td>
 																		<td class="cell">{{ $orderList->qty }}</td>
 																		<td class="cell">{{ $orderList->std_pkg }}</td>
 																		<td class="cell">{{ number_format($orderList->value_mrp_less_50, 2) }}</td>
 																		<td class="cell">{{ number_format($orderList->total_value_mrp_less_50, 2) }}</td>
-																		<td class="cell">{{ $orderList->segment }}</td>
-																		{{-- <td class="cell">{{ $orderList->no_of_packs }}</td> --}}
-																		{{-- <td>
-																			<div align="center">
-																				<button type="button" class="btn btn-success btn-sm btn-rounded" 
-																				onclick="window.location='{{ url('approvedOrder/'.Crypt::encryptString($orderList->order_id)) }}'">
-																					<i class="fa fa-check"></i>
-																				</button>
-																		
-																				</div>
-																		</td> --}}
 																	</tr>
 																@endforeach
 															</tbody>

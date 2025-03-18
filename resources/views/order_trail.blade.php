@@ -60,8 +60,7 @@
                                                                         <th>Standard Package</th>
                                                                         <th>Material Price</th>
                                                                         <th>Total Price</th>
-                                                                        <th>Segment</th>
-                                                                        <th>Order Status</th>
+                                                                        <th>Bill to</th>
                                                                         <th>Actions</th> <!-- Edit & Delete -->
                                                                     </tr>
                                                                 </thead>
@@ -77,10 +76,9 @@
                                                                             <td class="cell">{{ $orderList->std_pkg }}</td>
                                                                             <td class="cell">{{ number_format($orderList->value_mrp_less_50, 2) }}</td>
                                                                             <td class="cell">{{ number_format($orderList->total_value_mrp_less_50, 2) }}</td>
-                                                                            <td class="cell">{{ $orderList->segment }}</td>
-                                                                            <td class="cell">{{ ucfirst($orderList->status) }}</td>
+                                                                            <td class="cell">{{ ucfirst($orderList->customer_code) }}</td>
                                                                                 <td>
-                                                                                    @if (session('role') == 'user' && $orderList->status == 'P')
+                                                                                    @if ((session('role') == 'user' || session('role') == 'sales') && $orderList->status == 'P')
                                                                                     <!-- User can Edit & Delete when status is 'P' -->
                                                                                     <a href="{{ route('edit-trail-order', ['id' => Crypt::encryptString($orderList->id)]) }}" class="btn btn-primary btn-sm">
                                                                                         <i class="fa fa-edit"></i>
@@ -89,7 +87,7 @@
                                                                                         🗑️
                                                                                     </button>
                                                                         
-                                                                                @elseif (session('role') == 'admin' && $orderList->status == 'I')
+                                                                                @elseif ((session('role') == 'admin') && ($orderList->status == 'P' || $orderList->status == 'I'))
                                                                                     <!-- Admin can Edit & Delete when status is 'I' -->
                                                                                     <a href="{{ route('edit-trail-order', ['id' => Crypt::encryptString($orderList->id)]) }}" class="btn btn-primary btn-sm">
                                                                                         <i class="fa fa-edit"></i>
@@ -98,7 +96,7 @@
                                                                                         🗑️
                                                                                     </button>
                                                                         
-                                                                                @elseif (session('role') == 'user' && $orderList->status == 'I')
+                                                                                @elseif ((session('role') == 'user' || session('role') == 'sales') && $orderList->status == 'I')
                                                                                     <!-- User sees a message instead of Edit/Delete when status is 'I' -->
                                                                                     <span class="text-muted">Not Editable</span>
                                                                         

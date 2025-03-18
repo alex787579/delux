@@ -51,7 +51,7 @@ class AuthController extends Controller
         $request->session()->put('EMPID', $user->id);
         $request->session()->put('Email', $user->email);
         $request->session()->put('c_id', $user->c_id);
-        $request->session()->put('EMP_NAME', ucfirst($user->name));
+        $request->session()->put('EMP_NAME', ucfirst($user->c_name));
         
         return redirect('/order-trail')->with('success', 'Login successful!');
     
